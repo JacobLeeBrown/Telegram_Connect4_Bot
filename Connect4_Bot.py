@@ -9,15 +9,15 @@ class Connect4_Bot(object):
         self.game            = game
         self.setupHasStarted = False
         self.gameHasStarted  = False
-        self.p_cur      = 0
+        self.p_cur           = 0
         # Player values
         self.p_set           = [False, False]
         self.p_id            = [0, 0]
         self.p_name          = ['', '']
         # Keyboard Markup
         custom_keyboard = [['1', '2', '3', '4', '5', '6', '7']]
-        self.rp_markup = ReplyKeyboardMarkup(custom_keyboard)
-        self.rm_markup = ReplyKeyboardRemove()
+        self.rp_markup  = ReplyKeyboardMarkup(custom_keyboard)
+        self.rm_markup  = ReplyKeyboardRemove()
 
     ### The Commands ###
 
@@ -121,7 +121,7 @@ class Connect4_Bot(object):
         self.gameHasStarted = True
         text = 'Let the games begin!'
         bot.send_message(chat_id=chat_id, text=text)
-        text = self.p_name[0] + '\'s turn!' + '\n' + self.game.boardToString()
+        text = self.p_name[0] + '\'s turn!' + '\n' + self.game.boardToEmojis()
         bot.send_message(chat_id=chat_id, text=text, 
                          reply_markup=self.rp_markup)
 
@@ -170,16 +170,17 @@ class Connect4_Bot(object):
         elif(res == 0):
             self.next_player()
             text = (self.p_name[self.p_cur] + '\'s turn!'
-                    '\n' + self.game.boardToString())
+                    '\n' + self.game.boardToEmojis())
             bot.send_message(chat_id=chat_id, text=text)
         elif(res == 1):
-            text = (self.p_name[self.p_cur] + ' wins the game!'
-                    '\n' + self.game.boardToString())
+            text = (self.p_name[self.p_cur] + ' wins!'
+                    '\n' + self.game.boardToEmojis())
             self.reset_game()
             bot.send_message(chat_id=chat_id, text=text, 
                              reply_markup=self.rm_markup)
         else:
-            text = 'Well... it\'s a tie... good job... I guess.'
+            text = ('Well... it\'s a tie... good job... I guess.'
+                    '\n' + self.game.boardToEmojis())
             self.reset_game()
             bot.send_message(chat_id=chat_id, text=text, 
                              reply_markup=self.rm_markup)
