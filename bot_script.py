@@ -1,5 +1,5 @@
 
-from my_env import get_token, get_whitelist
+import my_env as env
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, BaseFilter
 
@@ -27,13 +27,13 @@ class WhitelistFilter(BaseFilter):
 
 def main():
     # Initialize bot (telegram)
-    updater = Updater(token=get_token())
+    updater = Updater(token=env.connect4_token)
     dp = updater.dispatcher
     # Initialize Connect4 wrapper
     game = Connect4()
     my_bot = Connect4_Bot(game)
     # Initialize whitelist filter
-    my_filter = WhitelistFilter(get_whitelist())
+    my_filter = WhitelistFilter(env.user_whitelist)
 
     # Register commands with the Telegram Bot
     start_game_handler  = CommandHandler('start_game', my_bot.start_game, 
