@@ -145,8 +145,8 @@ class Connect4_Bot(object):
 
         if(text in string.digits and int(text) >= 1 and int(text) <= 7):
             if(self.gameHasStarted):
-                if((self.p_cur == 1 and not(self.p_id[0] == user_id)) or
-                   (self.p_cur == 2 and not(self.p_id[1] == user_id))):
+                if((self.p_cur == 0 and not(self.p_id[0] == user_id)) or
+                   (self.p_cur == 1 and not(self.p_id[1] == user_id))):
                     text = 'It is not your turn!'
                     bot.send_message(chat_id=chat_id, text=text)
                 else:

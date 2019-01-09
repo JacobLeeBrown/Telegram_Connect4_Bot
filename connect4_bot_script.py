@@ -64,3 +64,6 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# Run in Pythom CLI with:
+# >>> exec(open("connect4_bot_script.py").read())
