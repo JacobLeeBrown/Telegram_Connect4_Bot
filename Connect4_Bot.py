@@ -108,11 +108,11 @@ class Connect4_Bot(object):
             self.reset_game()
         elif(self.p_id[self.P1] == user_id):
             text = (self.p_name[self.P1] + ' is a quitter! '
-                    self.p_name[self.P2] + ' wins!')
+                    '' + self.p_name[self.P2] + ' wins!')
             self.reset_game()
         elif(self.p_id[self.P2] == user_id):
             text = (self.p_name[self.P2] + ' is a quitter! '
-                    self.p_name[self.P1] + ' wins!')
+                    '' + self.p_name[self.P1] + ' wins!')
             self.reset_game()
 
         bot.send_message(chat_id=chat_id, text=text, 
