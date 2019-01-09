@@ -1,4 +1,3 @@
-import string
 from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
 
 class Connect4_Bot(object):
@@ -9,10 +8,12 @@ class Connect4_Bot(object):
         self.game            = game
         self.setupHasStarted = False
         self.gameHasStarted  = False
-        self.p_cur           = 0
+        self.P1              = 0
+        self.P2              = 1
+        self.p_cur           = self.P1
         # Player values
         self.p_set           = [False, False]
-        self.p_id            = [0, 0]
+        self.p_id            = [self.P1, self.P1]
         self.p_name          = ['', '']
         # Keyboard Markup
         custom_keyboard = [['1', '2', '3', '4', '5', '6', '7']]
@@ -35,9 +36,9 @@ class Connect4_Bot(object):
                     r'  Player 2, please select /p2')
         # Setup has begun, but a player still needs to be set
         elif(not(self.gameHasStarted)):
-            if(not(self.p_set[0])):
+            if(not(self.p_set[self.P1])):
                 text = r'Player 1 still needs to be set. Use /p1 to do so.'
-            elif(not(self.p_set[1])):
+            elif(not(self.p_set[self.P2])):
                 text = r'Player 2 still needs to be set. Use /p2 to do so.'
         # Game has started
         else:
@@ -53,20 +54,20 @@ class Connect4_Bot(object):
 
         # Player 1 has yet to be set
         if(not(self.setupHasStarted) or 
-           (self.setupHasStarted and not(self.p_set[0]))):
+           (self.setupHasStarted and not(self.p_set[self.P1]))):
             self.setupHasStarted = True
-            self.p_set[0]  = True
-            self.p_id[0]   = user.id
-            self.p_name[0] = user.first_name
-            text = self.p_name[0] + r' has been set as Player 1.'
+            self.p_set[self.P1]  = True
+            self.p_id[self.P1]   = user.id
+            self.p_name[self.P1] = user.first_name
+            text = self.p_name[self.P1] + ' has been set as Player 1.'
             bot.send_message(chat_id=chat_id, text=text)
         # Player 1 is set but game has not started
-        elif(self.p_set[0] and not(self.gameHasStarted)):
-            text = self.p_name[0] + r' is already Player 1!'
+        elif(self.p_set[self.P1] and not(self.gameHasStarted)):
+            text = self.p_name[self.P1] + ' is already Player 1!'
             bot.send_message(chat_id=chat_id, text=text)
         
         # If both players are set, start the game!
-        if(self.p_set[1] and not(self.gameHasStarted)):
+        if(self.p_set[self.P2] and not(self.gameHasStarted)):
             self.start_for_real(bot, chat_id)
 
     # /p2
@@ -77,20 +78,20 @@ class Connect4_Bot(object):
 
         # Player 2 has yet to be set
         if(not(self.setupHasStarted) or 
-           (self.setupHasStarted and not(self.p_set[1]))):
+           (self.setupHasStarted and not(self.p_set[self.P2]))):
             self.setupHasStarted = True
-            self.p_set[1]  = True
-            self.p_id[1]   = user.id
-            self.p_name[1] = user.first_name
-            text = self.p_name[1] + r' has been set as Player 2.'
+            self.p_set[self.P2]  = True
+            self.p_id[self.P2]   = user.id
+            self.p_name[self.P2] = user.first_name
+            text = self.p_name[self.P2] + ' has been set as Player 2.'
             bot.send_message(chat_id=chat_id, text=text)
         # Player 2 is set but game has not started
-        elif(self.p_set[1] and not(self.gameHasStarted)):
-            text = self.p_name[1] + r' is already Player 2!'
+        elif(self.p_set[self.P2] and not(self.gameHasStarted)):
+            text = self.p_name[self.P2] + ' is already Player 2!'
             bot.send_message(chat_id=chat_id, text=text)
         
         # If both players are set, start the game!
-        if(self.p_set[0] and not(self.gameHasStarted)):
+        if(self.p_set[self.P1] and not(self.gameHasStarted)):
             self.start_for_real(bot, chat_id)
 
     # /quit
@@ -100,16 +101,18 @@ class Connect4_Bot(object):
         text = ''
 
         if(not(self.setupHasStarted)):
-            text = (r"You can't quit a game that hasn't even started yet..."
+            text = ("You can't quit a game that hasn't even started yet..."
                     '\n' + r'Use /start_game to being setup.')
         elif(not(self.gameHasStarted)):
             text = 'Resetting setup.'
             self.reset_game()
-        elif(self.p_id[0] == user_id):
-            text = self.p_name[0]+' is a quitter! ' + self.p_name[1]+' wins!'
+        elif(self.p_id[self.P1] == user_id):
+            text = (self.p_name[self.P1] + ' is a quitter! '
+                    self.p_name[self.P2] + ' wins!')
             self.reset_game()
-        elif(self.p_id[1] == user_id):
-            text = self.p_name[1]+' is a quitter! ' + self.p_name[0]+' wins!'
+        elif(self.p_id[self.P2] == user_id):
+            text = (self.p_name[self.P2] + ' is a quitter! '
+                    self.p_name[self.P1] + ' wins!')
             self.reset_game()
 
         bot.send_message(chat_id=chat_id, text=text, 
@@ -121,7 +124,8 @@ class Connect4_Bot(object):
         self.gameHasStarted = True
         text = 'Let the games begin!'
         bot.send_message(chat_id=chat_id, text=text)
-        text = self.p_name[0] + '\'s turn!' + '\n' + self.game.boardToEmojis()
+        text = (self.p_name[self.P1] + '\'s turn!'
+                '\n' + self.game.boardToEmojis())
         bot.send_message(chat_id=chat_id, text=text, 
                          reply_markup=self.rp_markup)
 
@@ -129,10 +133,10 @@ class Connect4_Bot(object):
         self.game.reset()
         self.setupHasStarted = False
         self.gameHasStarted = False
-        self.p_cur = 0
+        self.p_cur = self.P1
         
         self.p_set = [False, False]
-        self.p_id = [0, 0]
+        self.p_id = [self.P1, self.P1]
         self.p_name = ['', '']
 
     ### Player Actions ###
@@ -145,9 +149,9 @@ class Connect4_Bot(object):
 
         if(text in string.digits and int(text) >= 1 and int(text) <= 7):
             if(self.gameHasStarted):
-                if((self.p_cur == 0 and not(self.p_id[0] == user_id)) or
-                   (self.p_cur == 1 and not(self.p_id[1] == user_id))):
-                    text = 'It is not your turn!'
+                if((self.p_cur==self.P1 and not(self.p_id[self.P1]==user_id)) or
+                   (self.p_cur==self.P2 and not(self.p_id[self.P2]==user_id))):
+                    text = 'It\'s not your turn!'
                     bot.send_message(chat_id=chat_id, text=text)
                 else:
                     self.handle_move(bot, chat_id, int(text))
@@ -155,10 +159,10 @@ class Connect4_Bot(object):
     ### Helpers ###
 
     def next_player(self):
-        if(self.p_cur == 0):
-            self.p_cur = 1
-        elif(self.p_cur == 1):
-            self.p_cur = 0
+        if(self.p_cur == self.P1):
+            self.p_cur = self.P2
+        elif(self.p_cur == self.P2):
+            self.p_cur = self.P1
 
     def handle_move(self, bot, chat_id, col):
         
