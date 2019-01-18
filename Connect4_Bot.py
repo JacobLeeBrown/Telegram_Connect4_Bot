@@ -13,7 +13,7 @@ class Connect4_Bot(object):
         self.p_cur           = self.P1
         # Player values
         self.p_set           = [False, False]
-        self.p_id            = [self.P1, self.P1]
+        self.p_id            = [0, 0]
         self.p_name          = ['', '']
         # Keyboard Markup
         custom_keyboard = [['1', '2', '3', '4', '5', '6', '7']]
