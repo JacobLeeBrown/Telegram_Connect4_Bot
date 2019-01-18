@@ -131,13 +131,13 @@ class Connect4_Bot(object):
 
     def reset_game(self):
         self.game.reset()
-        self.setupHasStarted = False
-        self.gameHasStarted = False
-        self.p_cur = self.P1
+        self.setupHasStarted    = False
+        self.gameHasStarted     = False
+        self.p_cur              = self.P1
         
-        self.p_set = [False, False]
-        self.p_id = [self.P1, self.P1]
-        self.p_name = ['', '']
+        self.p_set              = [False, False]
+        self.p_id               = [0, 0]
+        self.p_name             = ['', '']
 
     ### Player Actions ###
 
