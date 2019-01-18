@@ -147,7 +147,7 @@ class Connect4_Bot(object):
         chat_id = update.message.chat_id
         user_id = update.message.from_user.id
 
-        if(text in string.digits and int(text) >= 1 and int(text) <= 7):
+        if(text.isdigit() and int(text) >= 1 and int(text) <= 7):
             if(self.gameHasStarted):
                 if((self.p_cur==self.P1 and not(self.p_id[self.P1]==user_id)) or
                    (self.p_cur==self.P2 and not(self.p_id[self.P2]==user_id))):
