@@ -27,7 +27,7 @@ class WhitelistFilter(BaseFilter):
 
 def main():
     # Initialize bot (telegram)
-    updater = Updater(token=env.connect4_token)
+    updater = Updater(token=env.connect4_token, use_context=True)
     dp = updater.dispatcher
     # Initialize Connect4 wrapper
     game = Connect4()
