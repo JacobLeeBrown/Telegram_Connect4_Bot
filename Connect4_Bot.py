@@ -1,4 +1,4 @@
-from telegram import ReplyKeyboardMarkup, ReplyKeyboardRemove
+from telegram import ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup
 
 class Connect4_Bot(object):
 
@@ -16,9 +16,15 @@ class Connect4_Bot(object):
         self.p_id            = [0, 0]
         self.p_name          = ['', '']
         # Keyboard Markup
-        custom_keyboard = [['1', '2', '3', '4', '5', '6', '7']]
-        self.rp_markup  = ReplyKeyboardMarkup(custom_keyboard)
-        self.rm_markup  = ReplyKeyboardRemove()
+        custom_keyboard = [[InlineKeyboardButton('1', callback_data='1'),
+                            InlineKeyboardButton('2', callback_data='2'),
+                            InlineKeyboardButton('3', callback_data='3'),
+                            InlineKeyboardButton('4', callback_data='4'),
+                            InlineKeyboardButton('5', callback_data='5'),
+                            InlineKeyboardButton('6', callback_data='6'),
+                            InlineKeyboardButton('7', callback_data='7')]]
+        self.inline_markup  = InlineKeyboardMarkup(custom_keyboard)
+        self.rm_markup      = ReplyKeyboardRemove()
 
     ### The Commands ###
 
@@ -32,8 +38,8 @@ class Connect4_Bot(object):
         if(not(self.setupHasStarted)):
             self.setupHasStarted = True
             text = (r'~~~~ Welcome to Connect 4! ~~~~' + '\n'
-                r'  Player 1, please select /p1' + '\n'
-                r'  Player 2, please select /p2')
+                    r'  Player 1, please select /p1' + '\n'
+                    r'  Player 2, please select /p2')
         # Setup has begun, but a player still needs to be set
         elif(not(self.gameHasStarted)):
             if(not(self.p_set[self.P1])):
@@ -100,21 +106,22 @@ class Connect4_Bot(object):
     def quit(self, update, context):
 
         chat_id = update.message.chat_id
+        user_id = update.message.from_user.id
         text = ''
 
         if(not(self.setupHasStarted)):
             text = ("You can't quit a game that hasn't even started yet..."
-                '\n' + r'Use /start_game to being setup.')
+                    '\n' + r'Use /start_game to being setup.')
         elif(not(self.gameHasStarted)):
             text = 'Resetting setup.'
             self.reset_game()
         elif(self.p_id[self.P1] == user_id):
             text = (self.p_name[self.P1] + ' is a quitter! '
-                '' + self.p_name[self.P2] + ' wins!')
+                    '' + self.p_name[self.P2] + ' wins!')
             self.reset_game()
         elif(self.p_id[self.P2] == user_id):
             text = (self.p_name[self.P2] + ' is a quitter! '
-                '' + self.p_name[self.P1] + ' wins!')
+                    '' + self.p_name[self.P1] + ' wins!')
             self.reset_game()
 
         context.bot.send_message(chat_id=chat_id, text=text, 
@@ -129,7 +136,7 @@ class Connect4_Bot(object):
         text = (self.p_name[self.P1] + '\'s turn!'
                 '\n' + self.game.boardToEmojis())
         bot.send_message(chat_id=chat_id, text=text, 
-                         reply_markup=self.rp_markup)
+                         reply_markup=self.inline_markup)
 
     def reset_game(self):
         self.game.reset()
@@ -145,19 +152,22 @@ class Connect4_Bot(object):
 
     def place_chip(self, update, context):
 
+        #print(update)
+        
         bot = context.bot
-        text = update.message.text
-        chat_id = update.message.chat_id
-        user_id = update.message.from_user.id
+        query = update.callback_query
+        inline_text = query.data
+        user_id = query.from_user.id
 
-        if(text.isdigit() and int(text) >= 1 and int(text) <= 7):
+        if(inline_text.isdigit() and int(inline_text) >= 1 and int(inline_text) <= 7):
             if(self.gameHasStarted):
                 if((self.p_cur==self.P1 and not(self.p_id[self.P1]==user_id)) or
                    (self.p_cur==self.P2 and not(self.p_id[self.P2]==user_id))):
-                    text = 'It\'s not your turn!'
-                    bot.send_message(chat_id=chat_id, text=text)
+                    new_text = ("It's not your turn!"
+                                '\n' + self.game.boardToEmojis())
+                    query.edit_message_text(text=new_text)
                 else:
-                    self.handle_move(bot, chat_id, int(text))
+                    self.handle_move(query, int(inline_text))
 
     ### Helpers ###
 
@@ -167,27 +177,31 @@ class Connect4_Bot(object):
         elif(self.p_cur == self.P2):
             self.p_cur = self.P1
 
-    def handle_move(self, bot, chat_id, col):
+    def handle_move(self, query, col):
         
         res = self.game.placeChip(self.p_cur+1, col)
+        emoji_board = self.game.boardToEmojis()
         
         if(res == -1):
-            text = "You can't place a chip there! Try again."
-            bot.send_message(chat_id=chat_id, text=text)
+            text = ("You can't place a chip there! Try again."
+                    '\n' + emoji_board)
+            query.edit_message_text(text=text)
+            query.edit_message_reply_markup(reply_markup=self.inline_markup)
         elif(res == 0):
             self.next_player()
             text = (self.p_name[self.p_cur] + '\'s turn!'
-                '\n' + self.game.boardToEmojis())
-            bot.send_message(chat_id=chat_id, text=text)
+                    '\n' + emoji_board)
+            query.edit_message_text(text=text)
+            query.edit_message_reply_markup(reply_markup=self.inline_markup)
         elif(res == 1):
             text = (self.p_name[self.p_cur] + ' wins!'
-                '\n' + self.game.boardToEmojis())
+                    '\n' + emoji_board)
             self.reset_game()
-            bot.send_message(chat_id=chat_id, text=text, 
-                reply_markup=self.rm_markup)
+            query.edit_message_text(text=text)
+            query.edit_message_reply_markup(reply_markup=self.rm_markup)
         else:
             text = ('Well... it\'s a tie... good job... I guess.'
-                '\n' + self.game.boardToEmojis())
+                    '\n' + emoji_board)
             self.reset_game()
-            bot.send_message(chat_id=chat_id, text=text, 
-                reply_markup=self.rm_markup)
+            query.edit_message(text=text)
+            query.edit_message_reply_markup(reply_markup=self.rm_markup)

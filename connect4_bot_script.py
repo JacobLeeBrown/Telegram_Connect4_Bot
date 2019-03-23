@@ -1,7 +1,7 @@
 
 import my_env as env
 
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, BaseFilter
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, Filters, BaseFilter
 
 import logging as lg
 
@@ -48,8 +48,7 @@ def main():
     dp.add_handler(quit_handler)
 
     # Register player actions
-    place_chip_handler  = MessageHandler(Filters.text & my_filter, 
-                                         my_bot.place_chip)
+    place_chip_handler  = CallbackQueryHandler(my_bot.place_chip)
     dp.add_handler(place_chip_handler)
 
     # Log errors
