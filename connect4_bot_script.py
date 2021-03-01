@@ -4,7 +4,7 @@ from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageF
 
 import my_env as env
 from Connect4 import Connect4
-from Connect4_Bot import Connect4_Bot
+from Connect4Bot import Connect4Bot
 
 # Basic logging
 lg.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -31,7 +31,7 @@ def main():
     dp = updater.dispatcher
     # Initialize Connect4 wrapper
     game = Connect4()
-    my_bot = Connect4_Bot(game)
+    my_bot = Connect4Bot(game)
     # Initialize whitelist filter
     my_filter = WhitelistFilter(env.user_whitelist)
 
