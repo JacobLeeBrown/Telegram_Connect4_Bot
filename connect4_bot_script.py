@@ -1,9 +1,8 @@
-import my_env as env
-
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, Filters, BaseFilter
-
 import logging as lg
 
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageFilter
+
+import my_env as env
 from Connect4 import Connect4
 from Connect4_Bot import Connect4_Bot
 
@@ -18,7 +17,7 @@ def error(bot, update, error):
 
 
 # User Whitelist Filter
-class WhitelistFilter(BaseFilter):
+class WhitelistFilter(MessageFilter):
     def __init__(self, whitelist):
         self.whitelist = whitelist
 

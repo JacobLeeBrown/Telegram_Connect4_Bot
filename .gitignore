@@ -1,6 +1,7 @@
 my_env.py
 scraps.py
 scratch.ipynb
+logs/
 
 # IntelliJ
 .idea/
