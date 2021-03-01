@@ -1,4 +1,3 @@
-
 import my_env as env
 
 from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, Filters, BaseFilter
@@ -13,8 +12,10 @@ lg.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                level=lg.INFO)
 logger = lg.getLogger(__name__)
 
+
 def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
+
 
 # User Whitelist Filter
 class WhitelistFilter(BaseFilter):
@@ -36,11 +37,10 @@ def main():
     my_filter = WhitelistFilter(env.user_whitelist)
 
     # Register commands with the Telegram Bot
-    start_game_handler  = CommandHandler('start_game', my_bot.start_game, 
-                                         filters=my_filter)
-    p1_handler          = CommandHandler('p1', my_bot.p1, filters=my_filter)
-    p2_handler          = CommandHandler('p2', my_bot.p2, filters=my_filter)
-    quit_handler        = CommandHandler('quit', my_bot.quit, filters=my_filter)
+    start_game_handler = CommandHandler('start_game', my_bot.start_game, filters=my_filter)
+    p1_handler = CommandHandler('p1', my_bot.p1, filters=my_filter)
+    p2_handler = CommandHandler('p2', my_bot.p2, filters=my_filter)
+    quit_handler = CommandHandler('quit', my_bot.quit, filters=my_filter)
 
     dp.add_handler(start_game_handler)
     dp.add_handler(p1_handler)
@@ -48,7 +48,7 @@ def main():
     dp.add_handler(quit_handler)
 
     # Register player actions
-    place_chip_handler  = CallbackQueryHandler(my_bot.place_chip)
+    place_chip_handler = CallbackQueryHandler(my_bot.place_chip)
     dp.add_handler(place_chip_handler)
 
     # Log errors
