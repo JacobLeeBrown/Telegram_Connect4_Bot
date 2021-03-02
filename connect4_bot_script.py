@@ -16,13 +16,13 @@ def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
 
 
-# User Whitelist Filter
-class WhitelistFilter(MessageFilter):
-    def __init__(self, whitelist):
-        self.whitelist = whitelist
+# User Allow List Filter
+class AllowListFilter(MessageFilter):
+    def __init__(self, allow_list):
+        self.allow_list = allow_list
 
     def filter(self, message):
-        return message.from_user.id in self.whitelist
+        return message.from_user.id in self.allow_list
 
 
 def main():
@@ -32,8 +32,8 @@ def main():
     # Initialize Connect4 wrapper
     game = Connect4()
     my_bot = Connect4Bot(game)
-    # Initialize whitelist filter
-    my_filter = WhitelistFilter(env.user_whitelist)
+    # Initialize allow list filter
+    my_filter = AllowListFilter(env.user_allow_list)
 
     # Register commands with the Telegram Bot
     start_game_handler = CommandHandler('start_game', my_bot.start_game, filters=my_filter)
