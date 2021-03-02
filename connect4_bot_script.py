@@ -1,6 +1,7 @@
 import logging as lg
 
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
 
 import my_env as env
 from AllowListFilter import AllowListFilter
@@ -8,16 +9,15 @@ from Connect4 import Connect4
 from Connect4Bot import Connect4Bot
 
 # Basic logging
-lg.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-               level=lg.INFO)
+lg.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=lg.INFO
+)
 logger = lg.getLogger(__name__)
 
 
-def error(bot, update, error):
-    logger.warning('Update "%s" caused error "%s"', update, error)
-
-
-# User Allow List Filter
+def error_handler(update: Update, context: CallbackContext) -> None:
+    # Log the error before we do anything else, so we can see it even if something breaks.
+    logger.error(msg="Exception while handling an update:", exc_info=context.error)
 
 
 def main():
@@ -46,7 +46,7 @@ def main():
     dp.add_handler(place_chip_handler)
 
     # Log errors
-    dp.add_error_handler(error)
+    dp.add_error_handler(error_handler)
 
     # Start the Bot
     updater.start_polling()
