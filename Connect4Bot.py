@@ -1,4 +1,32 @@
+from emoji import emojize
 from telegram import ReplyKeyboardRemove, InlineKeyboardButton, InlineKeyboardMarkup
+
+
+def board_to_emojis(board):
+    # Column Headers
+    headers = emojize(":keycap_1: :keycap_2: :keycap_3: :keycap_4: :keycap_5: :keycap_6: :keycap_7:",
+                      use_aliases=True)
+    red = emojize(":red_circle:", use_aliases=True)
+    blue = emojize(":large_blue_circle:", use_aliases=True)
+    white = emojize(":white_circle:", use_aliases=True)
+
+    res = headers + '\n'
+
+    for row in board:
+        r = ''
+        for entry in row:
+            if entry == 0:
+                r += white + ' '
+            elif entry == 1:
+                r += red + ' '
+            elif entry == 2:
+                r += blue + ' '
+        r = r[:-1]
+        res += r + '\n'
+
+    res += headers
+
+    return res
 
 
 class Connect4Bot(object):
@@ -130,7 +158,7 @@ class Connect4Bot(object):
         text = 'Let the games begin!'
         bot.send_message(chat_id=chat_id, text=text)
         text = (self.p_name[self.P1] + '\'s turn!'
-                                       '\n' + self.game.board_to_emojis())
+                                       '\n' + board_to_emojis(self.game.board))
         bot.send_message(chat_id=chat_id, text=text,
                          reply_markup=self.inline_markup)
 
@@ -157,7 +185,7 @@ class Connect4Bot(object):
                 if ((self.p_cur == self.P1 and not (self.p_id[self.P1] == user_id)) or
                         (self.p_cur == self.P2 and not (self.p_id[self.P2] == user_id))):
                     new_text = ("It's not your turn!"
-                                '\n' + self.game.board_to_emojis())
+                                '\n' + board_to_emojis(self.game.board))
                     query.edit_message_text(text=new_text)
                 else:
                     self.handle_move(query, int(inline_text))
@@ -173,7 +201,7 @@ class Connect4Bot(object):
     def handle_move(self, query, col):
 
         res = self.game.place_chip(self.p_cur + 1, col)
-        emoji_board = self.game.board_to_emojis()
+        emoji_board = board_to_emojis(self.game.board)
 
         if res == -1:
             text = ("You can't place a chip there! Try again."

@@ -1,4 +1,3 @@
-from emoji import emojize
 
 
 class Connect4:
@@ -89,29 +88,3 @@ class Connect4:
         for i in range(self.rows):
             res = res + str(self.board[i]) + '\n'
         return res[:-1]
-
-    def board_to_emojis(self):
-        # Column Headers
-        headers = emojize(":keycap_1: :keycap_2: :keycap_3: :keycap_4: :keycap_5: :keycap_6: :keycap_7:",
-                          use_aliases=True)
-        red = emojize(":red_circle:", use_aliases=True)
-        blue = emojize(":large_blue_circle:", use_aliases=True)
-        white = emojize(":white_circle:", use_aliases=True)
-
-        res = headers + '\n'
-
-        for row in self.board:
-            r = ''
-            for entry in row:
-                if entry == 0:
-                    r += white + ' '
-                elif entry == 1:
-                    r += red + ' '
-                elif entry == 2:
-                    r += blue + ' '
-            r = r[:-1]
-            res += r + '\n'
-
-        res += headers
-
-        return res
