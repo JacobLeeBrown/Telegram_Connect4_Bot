@@ -1,8 +1,9 @@
 import logging as lg
 
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageFilter
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler
 
 import my_env as env
+from AllowListFilter import AllowListFilter
 from Connect4 import Connect4
 from Connect4Bot import Connect4Bot
 
@@ -17,12 +18,6 @@ def error(bot, update, error):
 
 
 # User Allow List Filter
-class AllowListFilter(MessageFilter):
-    def __init__(self, allow_list):
-        self.allow_list = allow_list
-
-    def filter(self, message):
-        return message.from_user.id in self.allow_list
 
 
 def main():
