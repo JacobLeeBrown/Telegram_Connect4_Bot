@@ -24,4 +24,12 @@ Required packages:
     $ conda install -c conda-forge python-telegram-bot
     $ conda install -c conda-forge emoji
 
+Future Features
+---------------
+
+1. General 1 Instance Clean Up
+2. Enhanced Error Handling
+3. Ability to select chip emoji
+4. Multiple Instances Simultaneously
+
 
