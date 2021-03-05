@@ -1,34 +1,29 @@
 import logging as lg
 
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, MessageFilter
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
 
 import my_env as env
+from AllowListFilter import AllowListFilter
 from Connect4 import Connect4
 from Connect4Bot import Connect4Bot
 
 # Basic logging
-lg.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-               level=lg.INFO)
+lg.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=lg.INFO
+)
 logger = lg.getLogger(__name__)
 
 
-def error(bot, update, error):
-    logger.warning('Update "%s" caused error "%s"', update, error)
-
-
-# User Allow List Filter
-class AllowListFilter(MessageFilter):
-    def __init__(self, allow_list):
-        self.allow_list = allow_list
-
-    def filter(self, message):
-        return message.from_user.id in self.allow_list
+def error_handler(update: Update, context: CallbackContext) -> None:
+    # Log the error before we do anything else, so we can see it even if something breaks.
+    logger.error(msg="Exception while handling an update:", exc_info=context.error)
 
 
 def main():
     # Initialize bot (telegram)
     updater = Updater(token=env.connect4_token, use_context=True)
-    dp = updater.dispatcher
+    dispatcher = updater.dispatcher
     # Initialize Connect4 wrapper
     game = Connect4()
     my_bot = Connect4Bot(game)
@@ -41,17 +36,17 @@ def main():
     p2_handler = CommandHandler('p2', my_bot.p2, filters=my_filter)
     quit_handler = CommandHandler('quit', my_bot.quit, filters=my_filter)
 
-    dp.add_handler(start_game_handler)
-    dp.add_handler(p1_handler)
-    dp.add_handler(p2_handler)
-    dp.add_handler(quit_handler)
+    dispatcher.add_handler(start_game_handler)
+    dispatcher.add_handler(p1_handler)
+    dispatcher.add_handler(p2_handler)
+    dispatcher.add_handler(quit_handler)
 
     # Register player actions
     place_chip_handler = CallbackQueryHandler(my_bot.place_chip)
-    dp.add_handler(place_chip_handler)
+    dispatcher.add_handler(place_chip_handler)
 
     # Log errors
-    dp.add_error_handler(error)
+    dispatcher.add_error_handler(error_handler)
 
     # Start the Bot
     updater.start_polling()
