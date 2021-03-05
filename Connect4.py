@@ -7,8 +7,8 @@ class Connect4:
         self.cols = cols_
         self.spaces = self.rows * self.cols
         self.in_a_row = in_a_row_
-        self.board = [[0 for i in range(self.cols)] for j in range(self.rows)]
-        self.bottom = [(self.rows - 1) for i in range(self.cols)]
+        self.board = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
+        self.bottom = [(self.rows - 1) for _ in range(self.cols)]
         self.move_count = 0
 
     def place_chip(self, player, column):
@@ -19,23 +19,22 @@ class Connect4:
         #     2 - Valid placement, game is tied
 
         col = column - 1
-        row = self.bottom[col]
+        row = self.bottom[col]  # Gets the row the chip would land
 
         # Invalid move
-        if row == -1 or col < 0 or col >= self.cols:
+        if row == -1 or col < 0 or col >= self.cols or self.board[row][col] != 0:
             return -1
-        # Valid placement
-        elif self.board[row][col] == 0:
-            self.board[row][col] = player
-            self.bottom[col] -= 1
-            self.move_count += 1
 
-            if self.check_for_win(row, col, player):
-                return 1
-            elif self.move_count == self.spaces:
-                return 2
-            else:
-                return 0
+        self.board[row][col] = player
+        self.bottom[col] -= 1
+        self.move_count += 1
+
+        if self.check_for_win(row, col, player):
+            return 1
+        elif self.move_count == self.spaces:
+            return 2
+        else:
+            return 0
 
     def check_for_win(self, row, col, player):
         # Spirally checks all directions of the current location to see if the
