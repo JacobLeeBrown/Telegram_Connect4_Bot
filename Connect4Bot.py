@@ -120,7 +120,7 @@ class Connect4Bot(object):
             text = (self.p_name[P1] + ' is a quitter! ' +
                     self.p_name[P2] + ' wins!\n' +
                     board_to_emojis(self.game.board))
-            bot.edit_message(chat_id=chat_id, text=text, message_id=self.game_message.message_id)
+            bot.edit_message_text(chat_id=chat_id, text=text, message_id=self.game_message.message_id)
             self.reset_game()
         elif self.p_id[P2] == user_id:
             text = (self.p_name[P2] + ' is a quitter! ' +
