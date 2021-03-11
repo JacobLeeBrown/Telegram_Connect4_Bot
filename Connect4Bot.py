@@ -13,6 +13,7 @@ class Connect4Bot(object):
         self.setupHasStarted = False
         self.gameHasStarted = False
         self.p_cur = P1  # Player 1 goes first
+        self.game_message = None
         # Player values
         self.p_set = [False, False]
         self.p_id = [0, 0]
@@ -102,6 +103,7 @@ class Connect4Bot(object):
     # /quit
     def quit(self, update, context):
 
+        bot = context.bot
         chat_id = update.message.chat_id
         user_id = update.message.from_user.id
         text = ''
@@ -109,19 +111,23 @@ class Connect4Bot(object):
         if not self.setupHasStarted:
             text = ("You can't quit a game that hasn't even started yet...\n" +
                     'Use /start_game to begin setup.')
+            bot.send_message(chat_id=chat_id, text=text)
         elif not self.gameHasStarted:
             text = 'Resetting setup.'
+            bot.send_message(chat_id=chat_id, text=text)
             self.reset_game()
         elif self.p_id[P1] == user_id:
             text = (self.p_name[P1] + ' is a quitter! ' +
-                    self.p_name[P2] + ' wins!')
+                    self.p_name[P2] + ' wins!\n' +
+                    board_to_emojis(self.game.board))
+            bot.edit_message_text(chat_id=chat_id, text=text, message_id=self.game_message.message_id)
             self.reset_game()
         elif self.p_id[P2] == user_id:
             text = (self.p_name[P2] + ' is a quitter! ' +
-                    self.p_name[P1] + ' wins!')
+                    self.p_name[P1] + ' wins!\n' +
+                    board_to_emojis(self.game.board))
+            bot.edit_message_text(chat_id=chat_id, text=text, message_id=self.game_message.message_id)
             self.reset_game()
-
-        context.bot.send_message(chat_id=chat_id, text=text)
 
     # Command Helpers
 
@@ -133,13 +139,14 @@ class Connect4Bot(object):
 
         text = (self.p_name[P1] + '\'s turn!\n' +
                 board_to_emojis(self.game.board))
-        bot.send_message(chat_id=chat_id, text=text, reply_markup=self.inline_markup)
+        self.game_message = bot.send_message(chat_id=chat_id, text=text, reply_markup=self.inline_markup)
 
     def reset_game(self):
         self.game.reset()
         self.setupHasStarted = False
         self.gameHasStarted = False
         self.p_cur = P1
+        self.game_message = None
 
         self.p_set = [False, False]
         self.p_id = [0, 0]
