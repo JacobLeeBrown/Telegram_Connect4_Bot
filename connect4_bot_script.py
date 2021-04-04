@@ -1,10 +1,11 @@
 import logging as lg
 
 from telegram import Update
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
+from telegram.ext import Updater, CommandHandler, MessageHandler, CallbackQueryHandler, CallbackContext
 
 import my_env as env
 from AllowListFilter import AllowListFilter
+from EmojiMessageFilter import EmojiMessageFilter
 from Connect4 import Connect4
 from Connect4Bot import Connect4Bot
 
@@ -15,9 +16,13 @@ lg.basicConfig(
 logger = lg.getLogger(__name__)
 
 
-def error_handler(update: Update, context: CallbackContext) -> None:
+def error_handler(_: Update, context: CallbackContext) -> None:
     # Log the error before we do anything else, so we can see it even if something breaks.
     logger.error(msg="Exception while handling an update:", exc_info=context.error)
+
+def nothing_def(update: Update, _: CallbackContext) -> None:
+    user = update.message.from_user
+    logger.info("Got message from %s", user.first_name)
 
 
 def main():
@@ -29,6 +34,7 @@ def main():
     my_bot = Connect4Bot(game)
     # Initialize allow list filter
     my_filter = AllowListFilter(env.user_allow_list)
+    emoji_filter = EmojiMessageFilter()
 
     # Register commands with the Telegram Bot
     start_game_handler = CommandHandler('start_game', my_bot.start_game, filters=my_filter)
@@ -44,6 +50,10 @@ def main():
     # Register player actions
     place_chip_handler = CallbackQueryHandler(my_bot.place_chip)
     dispatcher.add_handler(place_chip_handler)
+
+    # Register message handler
+    message_handler = MessageHandler(emoji_filter, nothing_def)
+    dispatcher.add_handler(message_handler)
 
     # Log errors
     dispatcher.add_error_handler(error_handler)
