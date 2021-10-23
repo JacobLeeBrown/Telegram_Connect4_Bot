@@ -137,24 +137,22 @@ class Connect4Bot(object):
         elif not self.gameHasStarted:
             text = 'Resetting setup. Please wait for completion.'
             bot.send_message(chat_id=chat_id, text=text)
-            lg.debug(text)
-            self._reset_game()
+            self._reset_game(chat_id)
             text = 'Resetting complete.'
             bot.send_message(chat_id=chat_id, text=text)
-            lg.debug(text)
         elif self.p_id[P1] == user_id:
             text = (self.p_name[P1] + ' is a quitter! ' +
                     self.p_name[P2] + ' wins!\n' +
                     _board_to_emojis(self.game.board))
             bot.edit_message_text(chat_id=chat_id, text=text, message_id=self.game_message.message_id)
-            self._reset_game()
+            self._reset_game(chat_id)
             lg.debug('Player 1 Quit. Reset complete.')
         elif self.p_id[P2] == user_id:
             text = (self.p_name[P2] + ' is a quitter! ' +
                     self.p_name[P1] + ' wins!\n' +
                     _board_to_emojis(self.game.board))
             bot.edit_message_text(chat_id=chat_id, text=text, message_id=self.game_message.message_id)
-            self._reset_game()
+            self._reset_game(chat_id)
             lg.debug('Player 2 Quit. Reset complete.')
 
     # Command Helpers
@@ -182,7 +180,7 @@ class Connect4Bot(object):
 
     def _reset_game(self,
                     chat_id: Union[int, str]):
-        lg.debug('Resetting game! Chat_id=%d', chat_id)
+        lg.debug('Resetting game. Chat_id=%d', chat_id)
         self.game.reset()
         self.setupHasStarted = False
         self.gameHasStarted = False
@@ -193,8 +191,10 @@ class Connect4Bot(object):
         self.p_id = [0, 0]
         self.p_name = ['', '']
 
+        lg.debug('Stopping reminder thread', chat_id)
         self.reminder.alive = False
         self.reminder_thread.join(self.reminder.pause_sec)
+        lg.debug('Reset complete. Chat_id=%d', chat_id)
 
     # Player Actions
 
@@ -218,7 +218,7 @@ class Connect4Bot(object):
                                 _board_to_emojis(self.game.board))
                     query.edit_message_text(text=new_text, reply_markup=self.inline_markup)
                 else:
-                    self._handle_move(query, int(inline_text))
+                    self._handle_move(query, int(inline_text), update.edited_message.chat_id)
 
     # Helpers
 
@@ -230,7 +230,8 @@ class Connect4Bot(object):
 
     def _handle_move(self,
                      query: CallbackQuery,
-                     col: int):
+                     col: int,
+                     chat_id: Union[int, str]):
 
         res = self.game.place_chip(self.p_cur + 1, col)
         emoji_board = _board_to_emojis(self.game.board)
@@ -249,13 +250,13 @@ class Connect4Bot(object):
         elif res == 1:
             text = (self.p_name[self.p_cur] + ' wins!\n' +
                     emoji_board)
-            self._reset_game()
+            self._reset_game(chat_id)
             query.edit_message_text(text=text)
             self.reminder.alive = False
         else:
             text = ('Well... it\'s a tie... good job... I guess.\n' +
                     emoji_board)
-            self._reset_game()
+            self._reset_game(chat_id)
             query.edit_message_text(text=text)
             self.reminder.alive = False
 
