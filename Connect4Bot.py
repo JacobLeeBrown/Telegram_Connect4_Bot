@@ -1,7 +1,13 @@
-from emoji import emojize
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from Reminder import Reminder
+import logging as lg
 import threading
+from typing import Union
+
+from emoji import emojize
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, Bot, CallbackQuery
+from telegram.ext import CallbackContext
+
+from Connect4 import Connect4
+from Reminder import Reminder
 
 P1, P2, P1_WIN, P2_WIN, BLANK = range(5)
 emoji_map = {P1: emojize(":red_circle:", use_aliases=True),
@@ -13,7 +19,8 @@ emoji_map = {P1: emojize(":red_circle:", use_aliases=True),
 
 class Connect4Bot(object):
 
-    def __init__(self, game):
+    def __init__(self,
+                 game: Connect4):
         # Universal Values
         self.game = game
         self.setupHasStarted = False
@@ -35,7 +42,9 @@ class Connect4Bot(object):
         self.inline_markup = InlineKeyboardMarkup(custom_keyboard)
 
     # /start_game
-    def start_game(self, update, context):
+    def start_game(self,
+                   update: Update,
+                   context: CallbackContext):
 
         chat_id = update.message.chat_id
         text = ''
@@ -59,7 +68,9 @@ class Connect4Bot(object):
         context.bot.send_message(chat_id=chat_id, text=text)
 
     # /p1
-    def p1(self, update, context):
+    def p1(self,
+           update: Update,
+           context: CallbackContext):
 
         bot = context.bot
         chat_id = update.message.chat_id
@@ -73,6 +84,7 @@ class Connect4Bot(object):
             self.p_name[P1] = user.first_name
             text = self.p_name[P1] + ' has been set as Player 1.'
             bot.send_message(chat_id=chat_id, text=text)
+            lg.debug(text)
         # Player 1 is set but game has not started
         elif self.p_set[P1] and not self.gameHasStarted:
             text = self.p_name[P1] + ' is already Player 1!'
@@ -83,7 +95,9 @@ class Connect4Bot(object):
             self._start_for_real(bot, chat_id)
 
     # /p2
-    def p2(self, update, context):
+    def p2(self,
+           update: Update,
+           context: CallbackContext):
 
         bot = context.bot
         chat_id = update.message.chat_id
@@ -97,6 +111,7 @@ class Connect4Bot(object):
             self.p_name[P2] = user.first_name
             text = self.p_name[P2] + ' has been set as Player 2.'
             bot.send_message(chat_id=chat_id, text=text)
+            lg.debug(text)
         # Player 2 is set but game has not started
         elif self.p_set[P2] and not self.gameHasStarted:
             text = self.p_name[P2] + ' is already Player 2!'
@@ -107,7 +122,9 @@ class Connect4Bot(object):
             self._start_for_real(bot, chat_id)
 
     # /quit
-    def quit(self, update, context):
+    def quit(self,
+             update: Update,
+             context: CallbackContext):
 
         bot = context.bot
         chat_id = update.message.chat_id
@@ -120,25 +137,32 @@ class Connect4Bot(object):
         elif not self.gameHasStarted:
             text = 'Resetting setup. Please wait for completion.'
             bot.send_message(chat_id=chat_id, text=text)
+            lg.debug(text)
             self._reset_game()
             text = 'Resetting complete.'
             bot.send_message(chat_id=chat_id, text=text)
+            lg.debug(text)
         elif self.p_id[P1] == user_id:
             text = (self.p_name[P1] + ' is a quitter! ' +
                     self.p_name[P2] + ' wins!\n' +
                     _board_to_emojis(self.game.board))
             bot.edit_message_text(chat_id=chat_id, text=text, message_id=self.game_message.message_id)
             self._reset_game()
+            lg.debug('Player 1 Quit. Reset complete.')
         elif self.p_id[P2] == user_id:
             text = (self.p_name[P2] + ' is a quitter! ' +
                     self.p_name[P1] + ' wins!\n' +
                     _board_to_emojis(self.game.board))
             bot.edit_message_text(chat_id=chat_id, text=text, message_id=self.game_message.message_id)
             self._reset_game()
+            lg.debug('Player 2 Quit. Reset complete.')
 
     # Command Helpers
 
-    def _start_for_real(self, bot, chat_id):
+    def _start_for_real(self,
+                        bot: Bot,
+                        chat_id: Union[int, str]):
+        lg.debug('Starting game! Chat_id=%d', chat_id)
         self.gameHasStarted = True
 
         text = 'Let the games begin!'
@@ -149,12 +173,16 @@ class Connect4Bot(object):
         self.game_message = bot.send_message(chat_id=chat_id, text=text, reply_markup=self.inline_markup)
 
         # Start Reminder
+        lg.debug('Reminder Thread - Initializing')
         self.reminder = Reminder(bot, chat_id, self.p_name[P1], self.p_name[P2], wait_sec=10, pause_sec=2)
         self.reminder_thread = threading.Thread(target=self.reminder.reminder_thread(), daemon=True)
         self.reminder.new_turn(P1)
         self.reminder_thread.start()
+        lg.debug('Reminder Thread - Kick off logic complete')
 
-    def _reset_game(self):
+    def _reset_game(self,
+                    chat_id: Union[int, str]):
+        lg.debug('Resetting game! Chat_id=%d', chat_id)
         self.game.reset()
         self.setupHasStarted = False
         self.gameHasStarted = False
@@ -170,7 +198,9 @@ class Connect4Bot(object):
 
     # Player Actions
 
-    def place_chip(self, update, context):
+    def place_chip(self,
+                   update: Update,
+                   context: CallbackContext):
 
         query = update.callback_query
         query.answer()
@@ -198,7 +228,9 @@ class Connect4Bot(object):
         elif self.p_cur == P2:
             self.p_cur = P1
 
-    def _handle_move(self, query, col):
+    def _handle_move(self,
+                     query: CallbackQuery,
+                     col: int):
 
         res = self.game.place_chip(self.p_cur + 1, col)
         emoji_board = _board_to_emojis(self.game.board)

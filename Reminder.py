@@ -2,6 +2,7 @@
 import time
 import time_util as t
 import random as r
+import logging as lg
 
 P1, P2 = range(2)
 
@@ -27,13 +28,17 @@ class Reminder(object):
         self.alive = True
 
     def reminder_thread(self):
+        lg.debug('reminder_thread - starting')
         while self.alive:
             if self.active and ((t.current_milli_time() - self.last_move) > self.wait_ms):
+                cur_player_name = self.names[self.cur_player]
+                lg.debug('reminder_thread - Sending reminder to: Name=%s, Chat_id=%d', cur_player_name, self.chat_id)
                 rand_int = r.randrange(len(msg_formats))
-                text = msg_formats[rand_int].format(self.names[self.cur_player])
+                text = msg_formats[rand_int].format(cur_player_name)
                 self.bot.send_message(chat_id=self.chat_id, text=text)
                 self.active = False
             else:
+                lg.debug('reminder_thread - Sleeping %d s', self.pause_sec)
                 time.sleep(self.pause_sec)
 
     def new_turn(self, player):
