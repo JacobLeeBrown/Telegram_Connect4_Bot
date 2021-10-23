@@ -172,7 +172,7 @@ class Connect4Bot(object):
 
         # Start Reminder
         lg.debug('Reminder Thread - Initializing')
-        self.reminder = Reminder(bot, chat_id, self.p_name[P1], self.p_name[P2], wait_sec=10, pause_sec=2)
+        self.reminder = Reminder(bot, chat_id, self.p_name[P1], self.p_name[P2])
         self.reminder_thread = threading.Thread(target=self.reminder.reminder_thread, daemon=True)
         self.reminder.new_turn(P1)
         self.reminder_thread.start()
