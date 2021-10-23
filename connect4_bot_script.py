@@ -10,7 +10,7 @@ from Connect4Bot import Connect4Bot
 
 # Basic logging
 lg.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=lg.INFO
+    format='%(asctime)s - %(name)20s - %(levelname)7s - %(message)s', level=lg.DEBUG
 )
 logger = lg.getLogger(__name__)
 
