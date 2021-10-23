@@ -84,7 +84,7 @@ class Connect4Bot(object):
             self.p_name[P1] = user.first_name
             text = self.p_name[P1] + ' has been set as Player 1.'
             bot.send_message(chat_id=chat_id, text=text)
-            lg.debug(text)
+            lg.info(text)
         # Player 1 is set but game has not started
         elif self.p_set[P1] and not self.gameHasStarted:
             text = self.p_name[P1] + ' is already Player 1!'
@@ -111,7 +111,7 @@ class Connect4Bot(object):
             self.p_name[P2] = user.first_name
             text = self.p_name[P2] + ' has been set as Player 2.'
             bot.send_message(chat_id=chat_id, text=text)
-            lg.debug(text)
+            lg.info(text)
         # Player 2 is set but game has not started
         elif self.p_set[P2] and not self.gameHasStarted:
             text = self.p_name[P2] + ' is already Player 2!'
@@ -138,7 +138,7 @@ class Connect4Bot(object):
             text = 'Resetting setup. Please wait for completion.'
             bot.send_message(chat_id=chat_id, text=text)
             self._reset_game()
-            text = 'Resetting complete.'
+            text = 'Reset complete.'
             bot.send_message(chat_id=chat_id, text=text)
         elif self.p_id[P1] == user_id:
             text = (self.p_name[P1] + ' is a quitter! ' +
@@ -146,21 +146,19 @@ class Connect4Bot(object):
                     _board_to_emojis(self.game.board))
             bot.edit_message_text(chat_id=chat_id, text=text, message_id=self.game_message.message_id)
             self._reset_game()
-            lg.debug('Player 1 Quit. Reset complete.')
         elif self.p_id[P2] == user_id:
             text = (self.p_name[P2] + ' is a quitter! ' +
                     self.p_name[P1] + ' wins!\n' +
                     _board_to_emojis(self.game.board))
             bot.edit_message_text(chat_id=chat_id, text=text, message_id=self.game_message.message_id)
             self._reset_game()
-            lg.debug('Player 2 Quit. Reset complete.')
 
     # Command Helpers
 
     def _start_for_real(self,
                         bot: Bot,
                         chat_id: Union[int, str]):
-        lg.debug('Starting game! Chat_id=%d', chat_id)
+        lg.info('Starting game! Chat_id=%d', chat_id)
         self.gameHasStarted = True
 
         text = 'Let the games begin!'
@@ -179,7 +177,7 @@ class Connect4Bot(object):
         lg.debug('Reminder Thread - Kick off logic complete')
 
     def _reset_game(self):
-        lg.debug('Resetting game.')
+        lg.info('Resetting game.')
         self.game.reset()
         self.setupHasStarted = False
         self.gameHasStarted = False
@@ -193,7 +191,7 @@ class Connect4Bot(object):
         lg.debug('Stopping reminder thread')
         self.reminder.alive = False
         self.reminder_thread.join(self.reminder.pause_sec)
-        lg.debug('Reset complete.')
+        lg.info('Reset complete.')
 
     # Player Actions
 

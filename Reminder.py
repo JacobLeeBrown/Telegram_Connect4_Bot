@@ -32,7 +32,7 @@ class Reminder(object):
         while self.alive:
             if self.active and ((t.current_milli_time() - self.last_move) > self.wait_ms):
                 cur_player_name = self.names[self.cur_player]
-                lg.debug('reminder_thread - Sending reminder to: Name=%s, Chat_id=%d', cur_player_name, self.chat_id)
+                lg.info('reminder_thread - Sending reminder to: Name=%s, Chat_id=%d', cur_player_name, self.chat_id)
                 rand_int = r.randrange(len(msg_formats))
                 text = msg_formats[rand_int].format(cur_player_name)
                 self.bot.send_message(chat_id=self.chat_id, text=text)
