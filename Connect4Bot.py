@@ -1,6 +1,7 @@
 from emoji import emojize
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-
+from Reminder import Reminder
+import threading
 
 P1, P2, P1_WIN, P2_WIN, BLANK = range(5)
 emoji_map = {P1: emojize(":red_circle:", use_aliases=True),
@@ -8,6 +9,7 @@ emoji_map = {P1: emojize(":red_circle:", use_aliases=True),
              P1_WIN: emojize(":100:", use_aliases=True),
              P2_WIN: emojize(":cyclone:", use_aliases=True),
              BLANK: emojize(":white_circle:", use_aliases=True)}
+
 
 class Connect4Bot(object):
 
@@ -110,16 +112,17 @@ class Connect4Bot(object):
         bot = context.bot
         chat_id = update.message.chat_id
         user_id = update.message.from_user.id
-        text = ''
 
         if not self.setupHasStarted:
             text = ("You can't quit a game that hasn't even started yet...\n" +
                     'Use /start_game to begin setup.')
             bot.send_message(chat_id=chat_id, text=text)
         elif not self.gameHasStarted:
-            text = 'Resetting setup.'
+            text = 'Resetting setup. Please wait for completion.'
             bot.send_message(chat_id=chat_id, text=text)
             self._reset_game()
+            text = 'Resetting complete.'
+            bot.send_message(chat_id=chat_id, text=text)
         elif self.p_id[P1] == user_id:
             text = (self.p_name[P1] + ' is a quitter! ' +
                     self.p_name[P2] + ' wins!\n' +
@@ -145,6 +148,12 @@ class Connect4Bot(object):
                 _board_to_emojis(self.game.board))
         self.game_message = bot.send_message(chat_id=chat_id, text=text, reply_markup=self.inline_markup)
 
+        # Start Reminder
+        self.reminder = Reminder(bot, chat_id, self.p_name[P1], self.p_name[P2], wait_sec=10, pause_sec=2)
+        self.reminder_thread = threading.Thread(target=self.reminder.reminder_thread(), daemon=True)
+        self.reminder.new_turn(P1)
+        self.reminder_thread.start()
+
     def _reset_game(self):
         self.game.reset()
         self.setupHasStarted = False
@@ -155,6 +164,9 @@ class Connect4Bot(object):
         self.p_set = [False, False]
         self.p_id = [0, 0]
         self.p_name = ['', '']
+
+        self.reminder.alive = False
+        self.reminder_thread.join(self.reminder.pause_sec)
 
     # Player Actions
 
@@ -195,21 +207,25 @@ class Connect4Bot(object):
             text = ("You can't place a chip there! Try again.\n" +
                     emoji_board)
             query.edit_message_text(text=text, reply_markup=self.inline_markup)
+            self.reminder.new_turn(self.p_cur)
         elif res == 0:
             self._next_player()
             text = (self.p_name[self.p_cur] + '\'s turn!\n' +
                     emoji_board)
             query.edit_message_text(text=text, reply_markup=self.inline_markup)
+            self.reminder.new_turn(self.p_cur)
         elif res == 1:
             text = (self.p_name[self.p_cur] + ' wins!\n' +
                     emoji_board)
             self._reset_game()
             query.edit_message_text(text=text)
+            self.reminder.alive = False
         else:
             text = ('Well... it\'s a tie... good job... I guess.\n' +
                     emoji_board)
             self._reset_game()
             query.edit_message_text(text=text)
+            self.reminder.alive = False
 
 
 def _board_to_emojis(board):
