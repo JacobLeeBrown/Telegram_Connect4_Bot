@@ -2,8 +2,12 @@ from emoji import emojize
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 
-P1, P2 = range(2)
-
+P1, P2, P1_WIN, P2_WIN, BLANK = range(5)
+emoji_map = {P1: emojize(":red_circle:", use_aliases=True),
+             P2: emojize(":large_blue_circle:", use_aliases=True),
+             P1_WIN: emojize(":100:", use_aliases=True),
+             P2_WIN: emojize(":cyclone:", use_aliases=True),
+             BLANK: emojize(":white_circle:", use_aliases=True)}
 
 class Connect4Bot(object):
 
@@ -74,7 +78,7 @@ class Connect4Bot(object):
 
         # If both players are set, start the game!
         if self.p_set[P2] and not self.gameHasStarted:
-            self.start_for_real(bot, chat_id)
+            self._start_for_real(bot, chat_id)
 
     # /p2
     def p2(self, update, context):
@@ -98,7 +102,7 @@ class Connect4Bot(object):
 
         # If both players are set, start the game!
         if self.p_set[P1] and not self.gameHasStarted:
-            self.start_for_real(bot, chat_id)
+            self._start_for_real(bot, chat_id)
 
     # /quit
     def quit(self, update, context):
@@ -115,33 +119,33 @@ class Connect4Bot(object):
         elif not self.gameHasStarted:
             text = 'Resetting setup.'
             bot.send_message(chat_id=chat_id, text=text)
-            self.reset_game()
+            self._reset_game()
         elif self.p_id[P1] == user_id:
             text = (self.p_name[P1] + ' is a quitter! ' +
                     self.p_name[P2] + ' wins!\n' +
-                    board_to_emojis(self.game.board))
+                    _board_to_emojis(self.game.board))
             bot.edit_message_text(chat_id=chat_id, text=text, message_id=self.game_message.message_id)
-            self.reset_game()
+            self._reset_game()
         elif self.p_id[P2] == user_id:
             text = (self.p_name[P2] + ' is a quitter! ' +
                     self.p_name[P1] + ' wins!\n' +
-                    board_to_emojis(self.game.board))
+                    _board_to_emojis(self.game.board))
             bot.edit_message_text(chat_id=chat_id, text=text, message_id=self.game_message.message_id)
-            self.reset_game()
+            self._reset_game()
 
     # Command Helpers
 
-    def start_for_real(self, bot, chat_id):
+    def _start_for_real(self, bot, chat_id):
         self.gameHasStarted = True
 
         text = 'Let the games begin!'
         bot.send_message(chat_id=chat_id, text=text)
 
         text = (self.p_name[P1] + '\'s turn!\n' +
-                board_to_emojis(self.game.board))
+                _board_to_emojis(self.game.board))
         self.game_message = bot.send_message(chat_id=chat_id, text=text, reply_markup=self.inline_markup)
 
-    def reset_game(self):
+    def _reset_game(self):
         self.game.reset()
         self.setupHasStarted = False
         self.gameHasStarted = False
@@ -169,52 +173,52 @@ class Connect4Bot(object):
                 if ((self.p_cur == P1 and not (self.p_id[P1] == user_id)) or
                         (self.p_cur == P2 and not (self.p_id[P2] == user_id))):
                     new_text = (user.first_name + ", it's not your turn!\n" +
-                                board_to_emojis(self.game.board))
+                                _board_to_emojis(self.game.board))
                     query.edit_message_text(text=new_text, reply_markup=self.inline_markup)
                 else:
-                    self.handle_move(query, int(inline_text))
+                    self._handle_move(query, int(inline_text))
 
     # Helpers
 
-    def next_player(self):
+    def _next_player(self):
         if self.p_cur == P1:
             self.p_cur = P2
         elif self.p_cur == P2:
             self.p_cur = P1
 
-    def handle_move(self, query, col):
+    def _handle_move(self, query, col):
 
         res = self.game.place_chip(self.p_cur + 1, col)
-        emoji_board = board_to_emojis(self.game.board)
+        emoji_board = _board_to_emojis(self.game.board)
 
         if res == -1:
             text = ("You can't place a chip there! Try again.\n" +
                     emoji_board)
             query.edit_message_text(text=text, reply_markup=self.inline_markup)
         elif res == 0:
-            self.next_player()
+            self._next_player()
             text = (self.p_name[self.p_cur] + '\'s turn!\n' +
                     emoji_board)
             query.edit_message_text(text=text, reply_markup=self.inline_markup)
         elif res == 1:
             text = (self.p_name[self.p_cur] + ' wins!\n' +
                     emoji_board)
-            self.reset_game()
+            self._reset_game()
             query.edit_message_text(text=text)
         else:
             text = ('Well... it\'s a tie... good job... I guess.\n' +
                     emoji_board)
-            self.reset_game()
+            self._reset_game()
             query.edit_message_text(text=text)
 
 
-def board_to_emojis(board):
+def _board_to_emojis(board):
     # Column Headers
     headers = emojize(":keycap_1: :keycap_2: :keycap_3: :keycap_4: :keycap_5: :keycap_6: :keycap_7:",
                       use_aliases=True)
-    red = emojize(":red_circle:", use_aliases=True)
-    blue = emojize(":large_blue_circle:", use_aliases=True)
-    white = emojize(":white_circle:", use_aliases=True)
+    p1_chip = emoji_map[P1]
+    p2_chip = emoji_map[P2]
+    blank = emoji_map[BLANK]
 
     res = headers + '\n'
 
@@ -222,11 +226,11 @@ def board_to_emojis(board):
         r = ''
         for entry in row:
             if entry == 0:
-                r += white + ' '
+                r += blank + ' '
             elif entry == 1:
-                r += red + ' '
+                r += p1_chip + ' '
             elif entry == 2:
-                r += blue + ' '
+                r += p2_chip + ' '
         r = r[:-1]
         res += r + '\n'
 
