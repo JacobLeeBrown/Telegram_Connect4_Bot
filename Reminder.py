@@ -10,7 +10,10 @@ msg_formats = [
     "Oi! {}! It's ya turn!",
     "Please make your move, {}.",
     "If {} is happy and they know it, they'll make their move!",
-    "{}, friendly reminder that it's your turn."
+    "{}, friendly reminder that it's your turn.",
+    "Do you think {} is always this slow?",
+    "Waiting for {} to make their move is like watching grass grow.",
+    "Maybe watching paint dry is faster than {} making their move."
 ]
 
 
