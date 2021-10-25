@@ -9,9 +9,11 @@ from telegram.ext import CallbackContext
 from Connect4 import Connect4
 from Reminder import Reminder
 
-P1, P2, P1_WIN, P2_WIN, BLANK = range(5)
+P1, P2, P1_LAST, P2_LAST, P1_WIN, P2_WIN, BLANK = range(7)
 emoji_map = {P1: emojize(":red_circle:", use_aliases=True),
              P2: emojize(":large_blue_circle:", use_aliases=True),
+             P1_LAST: emojize(":large_red_square:", use_aliases=True),
+             P2_LAST: emojize(":large_blue_square:", use_aliases=True),
              P1_WIN: emojize(":100:", use_aliases=True),
              P2_WIN: emojize(":cyclone:", use_aliases=True),
              BLANK: emojize(":white_circle:", use_aliases=True)}
@@ -82,12 +84,12 @@ class Connect4Bot(object):
             self.p_set[P1] = True
             self.p_id[P1] = user.id
             self.p_name[P1] = user.first_name
-            text = self.p_name[P1] + ' has been set as Player 1.'
+            text = '{} has been set as Player 1. {}'.format(self.p_name[P1], emoji_map[P1])
             bot.send_message(chat_id=chat_id, text=text)
             lg.info(text)
         # Player 1 is set but game has not started
         elif self.p_set[P1] and not self.gameHasStarted:
-            text = self.p_name[P1] + ' is already Player 1!'
+            text = '{} is already Player 1!'.format(self.p_name[P1])
             bot.send_message(chat_id=chat_id, text=text)
 
         # If both players are set, start the game!
@@ -109,12 +111,12 @@ class Connect4Bot(object):
             self.p_set[P2] = True
             self.p_id[P2] = user.id
             self.p_name[P2] = user.first_name
-            text = self.p_name[P2] + ' has been set as Player 2.'
+            text = '{} has been set as Player 2. {}'.format(self.p_name[P2], emoji_map[P2])
             bot.send_message(chat_id=chat_id, text=text)
             lg.info(text)
         # Player 2 is set but game has not started
         elif self.p_set[P2] and not self.gameHasStarted:
-            text = self.p_name[P2] + ' is already Player 2!'
+            text = '{} is already Player 2!'.format(self.p_name[P2])
             bot.send_message(chat_id=chat_id, text=text)
 
         # If both players are set, start the game!
@@ -141,15 +143,19 @@ class Connect4Bot(object):
             text = 'Reset complete.'
             bot.send_message(chat_id=chat_id, text=text)
         elif self.p_id[P1] == user_id:
-            text = (self.p_name[P1] + ' is a quitter! ' +
-                    self.p_name[P2] + ' wins!\n' +
-                    _board_to_emojis(self.game.board))
+            text = '{} is a quitter! {} wins!\n{}'.format(
+                self.p_name[P1],
+                self.p_name[P2],
+                _board_to_emojis(self.game.board)
+            )
             bot.edit_message_text(chat_id=chat_id, text=text, message_id=self.game_message.message_id)
             self._reset_game()
         elif self.p_id[P2] == user_id:
-            text = (self.p_name[P2] + ' is a quitter! ' +
-                    self.p_name[P1] + ' wins!\n' +
-                    _board_to_emojis(self.game.board))
+            text = '{} is a quitter! {} wins!\n{}'.format(
+                self.p_name[P2],
+                self.p_name[P1],
+                _board_to_emojis(self.game.board)
+            )
             bot.edit_message_text(chat_id=chat_id, text=text, message_id=self.game_message.message_id)
             self._reset_game()
 
@@ -164,8 +170,7 @@ class Connect4Bot(object):
         text = 'Let the games begin!'
         bot.send_message(chat_id=chat_id, text=text)
 
-        text = (self.p_name[P1] + '\'s turn!\n' +
-                _board_to_emojis(self.game.board))
+        text = '{}\'s turn!\n{}'.format(self.p_name[P1], _board_to_emojis(self.game.board))
         self.game_message = bot.send_message(chat_id=chat_id, text=text, reply_markup=self.inline_markup)
 
         # Start Reminder
@@ -211,8 +216,7 @@ class Connect4Bot(object):
             if self.gameHasStarted:
                 if ((self.p_cur == P1 and not (self.p_id[P1] == user_id)) or
                         (self.p_cur == P2 and not (self.p_id[P2] == user_id))):
-                    new_text = (user.first_name + ", it's not your turn!\n" +
-                                _board_to_emojis(self.game.board))
+                    new_text = '{}, it\'s not your turn!\n{}'.format(user.first_name, _board_to_emojis(self.game.board))
                     query.edit_message_text(text=new_text, reply_markup=self.inline_markup)
                 else:
                     self._handle_move(query, int(inline_text))
@@ -233,28 +237,22 @@ class Connect4Bot(object):
         emoji_board = _board_to_emojis(self.game.board)
 
         if res == -1:
-            text = ("You can't place a chip there! Try again.\n" +
-                    emoji_board)
+            text = 'You can\'t place a chip there! Try again.\n{}'.format(emoji_board)
             query.edit_message_text(text=text, reply_markup=self.inline_markup)
             self.reminder.new_turn(self.p_cur)
         elif res == 0:
             self._next_player()
-            text = (self.p_name[self.p_cur] + '\'s turn!\n' +
-                    emoji_board)
+            text = '{}\'s turn!\n{}'.format(self.p_name[self.p_cur], emoji_board)
             query.edit_message_text(text=text, reply_markup=self.inline_markup)
             self.reminder.new_turn(self.p_cur)
         elif res == 1:
-            text = (self.p_name[self.p_cur] + ' wins!\n' +
-                    emoji_board)
-            self._reset_game()
+            text = '{} wins!\n{}'.format(self.p_name[self.p_cur], emoji_board)
             query.edit_message_text(text=text)
-            self.reminder.alive = False
+            self._reset_game()
         else:
-            text = ('Well... it\'s a tie... good job... I guess.\n' +
-                    emoji_board)
-            self._reset_game()
+            text = 'Well... it\'s a tie... good job... I guess.\n{}'.format(emoji_board)
             query.edit_message_text(text=text)
-            self.reminder.alive = False
+            self._reset_game()
 
 
 def _board_to_emojis(board):
