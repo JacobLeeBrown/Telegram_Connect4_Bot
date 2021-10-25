@@ -261,6 +261,8 @@ def _board_to_emojis(board):
                       use_aliases=True)
     p1_chip = emoji_map[P1]
     p2_chip = emoji_map[P2]
+    p1_last_chip = emoji_map[P1_LAST]
+    p2_last_chip = emoji_map[P2_LAST]
     blank = emoji_map[BLANK]
 
     res = headers + '\n'
@@ -274,6 +276,10 @@ def _board_to_emojis(board):
                 r += p1_chip + ' '
             elif entry == Connect4.P2:
                 r += p2_chip + ' '
+            elif entry == Connect4.P1_LAST:
+                r += p1_last_chip + ' '
+            elif entry == Connect4.P2_LAST:
+                r += p2_last_chip + ' '
         r = r[:-1]  # Remove trailing space
         res += r + '\n'
 

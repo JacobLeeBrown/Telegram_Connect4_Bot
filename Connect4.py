@@ -1,7 +1,7 @@
 
 class Connect4:
 
-    BLANK, P1, P2 = range(3)
+    BLANK, P1, P2, P1_LAST, P2_LAST = range(3)
     BAD_MOVE, GOOD_MOVE, WIN_MOVE, TIE_MOVE = range(-1, 3)
 
     def __init__(self, rows_=6, cols_=7, in_a_row_=4):
@@ -22,6 +22,7 @@ class Connect4:
         self.board = [[0 for _ in range(self.cols)] for _ in range(self.rows)]
         self.bottom = [(self.rows - 1) for _ in range(self.cols)]
         self.move_count = 0
+        self.last_move = (0, 0, 0)
 
     def place_chip(self,
                    player: int,
@@ -54,7 +55,12 @@ class Connect4:
         if row == -1 or col < 0 or col >= self.cols or self.board[row][col] != 0:
             return self.BAD_MOVE
 
-        self.board[row][col] = player
+        # Reset last move to normal chip
+        last_player, last_row, last_col = self.last_move
+        self.board[last_row][last_col] = last_player
+
+        self.board[row][col] = self.P1_LAST if player == self.P1 else self.P2_LAST
+        self.last_move = (player, row, col)
         self.bottom[col] -= 1
         self.move_count += 1
 
