@@ -1,7 +1,7 @@
 
 class Connect4:
 
-    BLANK, P1, P2, P1_LAST, P2_LAST = range(3)
+    BLANK, P1, P2, P1_LAST, P2_LAST = range(5)
     BAD_MOVE, GOOD_MOVE, WIN_MOVE, TIE_MOVE = range(-1, 3)
 
     def __init__(self, rows_=6, cols_=7, in_a_row_=4):

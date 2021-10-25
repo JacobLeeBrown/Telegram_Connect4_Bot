@@ -12,8 +12,8 @@ from Reminder import Reminder
 P1, P2, P1_LAST, P2_LAST, P1_WIN, P2_WIN, BLANK = range(7)
 emoji_map = {P1: emojize(":red_circle:", use_aliases=True),
              P2: emojize(":large_blue_circle:", use_aliases=True),
-             P1_LAST: emojize(":large_red_square:", use_aliases=True),
-             P2_LAST: emojize(":large_blue_square:", use_aliases=True),
+             P1_LAST: emojize(":red_square:", use_aliases=True),
+             P2_LAST: emojize(":blue_square:", use_aliases=True),
              P1_WIN: emojize(":100:", use_aliases=True),
              P2_WIN: emojize(":cyclone:", use_aliases=True),
              BLANK: emojize(":white_circle:", use_aliases=True)}
