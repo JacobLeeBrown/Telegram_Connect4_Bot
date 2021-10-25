@@ -270,13 +270,13 @@ def _board_to_emojis(board):
     for row in board:
         r = ''
         for entry in row:
-            if entry == 0:
+            if entry == Connect4.BLANK:
                 r += blank + ' '
-            elif entry == 1:
+            elif entry == Connect4.P1:
                 r += p1_chip + ' '
-            elif entry == 2:
+            elif entry == Connect4.P2:
                 r += p2_chip + ' '
-        r = r[:-1]
+        r = r[:-1]  # Remove trailing space
         res += r + '\n'
 
     res += headers
