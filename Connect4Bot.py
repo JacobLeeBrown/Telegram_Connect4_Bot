@@ -285,7 +285,7 @@ def _board_to_emojis(board):
                 r += p2_last_chip + ' '
             elif entry == Connect4.P1_WIN:
                 r += p1_win_chip + ' '
-            elif entry == Connect4.P2:
+            elif entry == Connect4.P2_WIN:
                 r += p2_win_chip + ' '
         r = r[:-1]  # Remove trailing space
         res += r + '\n'
